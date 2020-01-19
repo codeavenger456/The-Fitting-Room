@@ -5,11 +5,15 @@ import requests
 import json
 import time
 from django.http import HttpResponse
+import copy
+
+def eliminate(ID_num):
+    ID_set.discard(ID_num)
 
 # Create your views here.
-def index(request, name, gender, height):
+def index(request, name, gender, height, season, usage):
     data = {"personName": name}
-    u = User(name = name, gender = gender, height = height)
+    u = User(name = name, gender = gender, height = height, season = season, usage = usage)
     u.save()
     if request.method == 'POST':    
         upload_file = request.FILES['selfie']
@@ -99,6 +103,75 @@ def index(request, name, gender, height):
         right = (cloud_pose_estimation['frames'][0]['persons'][0]['pose2d']['joints'][11] + cloud_pose_estimation['frames'][0]['persons'][0]['pose2d']['joints'][9]) / 2 - cloud_pose_estimation['frames'][0]['persons'][0]['pose2d']['joints'][27]
         user["tibia"] = (left + right) / 2 / y_proportion
         user["body_ratio"] = user["torsol"] / user["legs"]
-        return HttpResponse(json.dumps(user))
+        s = ''
+        if u.gender == "Women":
+            if user["body_ratio"] > 1:
+                s += '- High waisted pants and to avoid long coats\n'
+            if user["hips"] > user["shoulder"]:
+                s += '- Tighter bottoms to show your curves (e.g. skinny jeans, tube skirt, etc) or looser bottoms to hide your curve (e.g. wide leg pants)\n'
+            if (user["shoulder"] - 2) > user["hips"]:
+                s += '- To avoid tight tops and big sleeves tops\n'
+        elif u.gender == "Men":
+            if user["body_ratio"] > 1:
+                s += '- High waisted pants and to avoid long coats\n'
+            if (user["shoulder"] - 2) <= user["hips"] <= (user["shoulder"] + 2):
+                s += '- Bulkier tops to enhance your shoulders'
+        else:
+            s += 'Anything you want! You have a relatively symmetric body'   
+        s = 'Based on your dimensions, we recommend that you try:\n' + s   
+        data["String"] = s
+        all_clothes = open("styles.csv", "r")
+        clothes_list = all_clothes.readlines()
+        clean_list = [[] for i in range(len(clothes_list))]
+
+        for i in range(len(clothes_list)):
+            clothes_list[i] = clothes_list[i].rstrip("\n").split(",")
+            clean_list[i] = list()
+            clean_list[i].append(clothes_list[i][0])
+            clean_list[i].append(clothes_list[i][1])
+            clean_list[i].append(clothes_list[i][6])
+            clean_list[i].append(clothes_list[i][8])
+
+        keys = clean_list[0]
+
+        del clean_list[0]
+
+        list_of_dicts = [{} for i in range(len(clean_list))]
+
+        ID_set = set()
+
+        for i in range(len(clean_list)):
+            for j in range(len(keys)):
+                list_of_dicts[i][keys[j]] = clean_list[i][j]
+            ID_set.add(list_of_dicts[i]["id"])
+
+        preferences = {"gender": u.gender, "season": u.season, "usage": u.usage}
+        properties = copy.deepcopy(list_of_dicts)
+        for i in range(len(properties)):
+            del properties[i]["id"]
+        
+            for key in preferences:
+                if properties[i][key] != preferences[key]:
+                    ID_set.remove(list_of_dicts[i]["id"])
+                    break
+
+        open_images = open("images.csv", "r")
+
+        image_lines = open_images.readlines()
+
+        image_dict = dict()
+
+        for line in image_lines:
+            line = line.rstrip("\n").split(",")
+            line[0] = line[0].rstrip(".jpg")
+            image_dict[line[0]] = line[1]
+
+        valid_images = set()
+
+        for id_num in image_dict:
+            if id_num in ID_set:
+                valid_images.add(image_dict[id_num])
+            data['urls'] = valid_images
+        return render(request, 'FittingApp/final.html', data)
 
     return render(request, 'FittingApp/index.html', data)

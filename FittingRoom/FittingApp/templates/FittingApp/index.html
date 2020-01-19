@@ -10,9 +10,12 @@
             border: 3px solid green;
             padding: 10px;
         }
+        p1, h5{
+            font-size: 30px;
+        }
 
         body {
-            background-color: green;
+            background-color: rgb(135, 151, 135);
             color: white;
         }
     </style>
@@ -26,8 +29,8 @@
     </form>
     <h2>Select your gender</h2>
     <form action = "POST">
-        <input type = "radio" name = "gender" value = "M"> Male<br>
-        <input type = "radio" name = "gender" value = "W"> Women
+        <input type = "radio" name = "gender" value = "Men"> Male<br>
+        <input type = "radio" name = "gender" value = "Women"> Women
     </form>
     <h3>Enter Your height</h3>
     <form action="POST">
@@ -38,6 +41,13 @@
         {% csrf_token %}
         <input type="file" name="selfie">
         <button type="submit">Upload files</button>
+    </form>
+    <h5>Select the season</h5>
+    <form action = "POST">
+        <input type = "radio" name = "season" value = "Spring"> Spring<br>
+        <input type = "radio" name = "season" value = "Summer"> Summer<br>
+        <input type = "radio" name = "season" value = "Fall"> Fall<br>
+        <input type = "radio" name = "season" value = "Winter"> Winter
     </form>
 </body>
 

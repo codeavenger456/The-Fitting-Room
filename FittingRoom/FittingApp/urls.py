@@ -4,5 +4,5 @@ from . import views
 app_name = "FittingApp"
 
 urlpatterns = [
-    path('', views.index, name = "index")
+    path('<str:name>/<str:gender>/<int:height>', views.index, name = "index"),
 ]

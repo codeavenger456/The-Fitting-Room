@@ -1,8 +1,44 @@
 <html>
-    <head>
 
-    </head>
-    <body>
-      <h1> Hello {{ personName }} </h1>  
-    </body>
+<head>
+    <style>
+        h1 {
+            font-family: verdana;
+            font-size: 300%;
+            margin: auto;
+            width: 50%;
+            border: 3px solid green;
+            padding: 10px;
+        }
+
+        body {
+            background-color: green;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1> Welcome to <br> The Fitting Room</h1>
+    <p1>{{ personName }}</p1>
+    <form action="POST">
+        <input type="text">
+    </form>
+    <h2>Select your gender</h2>
+    <form action = "POST">
+        <input type = "radio" name = "gender" value = "M"> Male<br>
+        <input type = "radio" name = "gender" value = "W"> Women
+    </form>
+    <h3>Enter Your height</h3>
+    <form action="POST">
+        <input type = "number" name = "height" min = "25" max = "300" step = ".01">
+    </form>
+    <h4>Upload</h4>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="selfie">
+        <button type="submit">Upload files</button>
+    </form>
+</body>
+
 </html>
